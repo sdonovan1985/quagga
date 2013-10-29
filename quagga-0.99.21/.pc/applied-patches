@@ -1,0 +1,10 @@
+91_ld_as_needed.diff
+90_configure_ncurses.diff
+82_vtysh__vtysh_user.c__pam.diff
+80_vtysh__vtysh.c__privs.diff
+75_vtysh__vtysh.c__PAGER.diff
+50_vtysh__vtysh.conf.sample.diff
+10_doc__Makefiles__makeinfo-force.diff
+99_CVE-2012-1820_bgp_capability_orf.diff
+99_distribute_list.diff
+99_fix_thread_cancel_event.diff

@@ -1,0 +1,35 @@
+From 1e47fb668d0125cbb6d53f73469093e744164a47 Mon Sep 17 00:00:00 2001
+From: Christian Franke <chris@opensourcerouting.org>
+Date: Tue, 04 Dec 2012 19:31:16 +0000
+Subject: ospfd: fix argument parsing for distribute-list
+
+Use the correct argument for the protocol lookup in
+ospf distribute-list commands.
+
+Signed-off-by: Christian Franke <chris@opensourcerouting.org>
+Signed-off-by: Scott Feldman <sfeldma@cumulusnetworks.com>
+---
+diff --git a/ospfd/ospf_vty.c b/ospfd/ospf_vty.c
+index 3655cfe..862ef95 100644
+--- a/ospfd/ospf_vty.c
++++ b/ospfd/ospf_vty.c
+@@ -6042,7 +6042,7 @@ DEFUN (ospf_distribute_list_out,
+   int source;
+ 
+   /* Get distribute source. */
+-  source = proto_redistnum(AFI_IP, argv[0]);
++  source = proto_redistnum(AFI_IP, argv[1]);
+   if (source < 0 || source == ZEBRA_ROUTE_OSPF)
+     return CMD_WARNING;
+ 
+@@ -6061,7 +6061,7 @@ DEFUN (no_ospf_distribute_list_out,
+   struct ospf *ospf = vty->index;
+   int source;
+ 
+-  source = proto_redistnum(AFI_IP, argv[0]);
++  source = proto_redistnum(AFI_IP, argv[1]);
+   if (source < 0 || source == ZEBRA_ROUTE_OSPF)
+     return CMD_WARNING;
+ 
+--
+cgit v0.9.0.2

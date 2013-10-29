@@ -1,0 +1,13 @@
+Description: This patch is just for the Woody Backport.
+Author: Christian Hammers <ch@debian.org>
+
+--- old/doc/Makefile.in	2011-09-29 15:00:34.000000000 +0200
++++ new/doc/Makefile.in	2012-02-25 19:21:16.000000000 +0100
+@@ -272,6 +272,7 @@
+ PNGTOEPS = convert -antialias -contrast -despeckle
+ PNGTOPDF = $(PNGTOEPS)
+ EPSTOPDF = epstopdf
++MAKEINFOFLAGS = --force
+ 
+ # The figure sources
+ figures_names_parts = -normal-processing -rs-processing \

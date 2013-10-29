@@ -1,0 +1,30 @@
+Description: Probably due to checklib complaints?
+Author: Christian Hammers <ch@debian.org>
+
+--- old/lib/Makefile.in
++++ new/lib/Makefile.in
+@@ -276,8 +276,8 @@
+ 	sigevent.c pqueue.c jhash.c memtypes.c workqueue.c
+ 
+ BUILT_SOURCES = memtypes.h route_types.h
+-libzebra_la_DEPENDENCIES = @LIB_REGEX@
+-libzebra_la_LIBADD = @LIB_REGEX@
++libzebra_la_DEPENDENCIES = @LIB_REGEX@ @LIBCAP@
++libzebra_la_LIBADD = @LIB_REGEX@ @LIBCAP@
+ pkginclude_HEADERS = \
+ 	buffer.h checksum.h command.h filter.h getopt.h hash.h \
+ 	if.h linklist.h log.h \
+--- quagga-0.99.17.orig/lib/Makefile.am
++++ quagga-0.99.17/lib/Makefile.am
+@@ -16,9 +16,9 @@
+ 
+ BUILT_SOURCES = memtypes.h route_types.h
+ 
+-libzebra_la_DEPENDENCIES = @LIB_REGEX@
++libzebra_la_DEPENDENCIES = @LIB_REGEX@ @LIBCAP@
+ 
+-libzebra_la_LIBADD = @LIB_REGEX@
++libzebra_la_LIBADD = @LIB_REGEX@ @LIBCAP@
+ 
+ pkginclude_HEADERS = \
+ 	buffer.h checksum.h command.h filter.h getopt.h hash.h \
