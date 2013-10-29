@@ -3,7 +3,9 @@
 git pull
 cd quagga-0.99.21
 EDITOR=/bin/true dpkg-source -q --commit . 
-dpkg-buildpackage -us -uc
+dpkg-buildpackage -us -u
+#use this if you want to commit, it's cleaner on the git status
+#dpkg-buildpackage -us -uc -tc 
 cd ..
 sudo dpkg --install ../quagga_0.99.22-1_amd64.deb
 
