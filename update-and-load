@@ -1,0 +1,10 @@
+#/bin/bash
+
+git pull
+cd quagga-0.99.21
+EDITOR=/bin/true dpkg-source -q --commit . 
+dpkg-buildpackage -us -uc
+cd ..
+sudo dpkg --install ../quagga_0.99.22-1_amd64.deb
+
+
