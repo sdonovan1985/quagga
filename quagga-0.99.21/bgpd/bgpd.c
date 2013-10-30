@@ -61,6 +61,11 @@ Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 #ifdef HAVE_SNMP
 #include "bgpd/bgp_snmp.h"
 #endif /* HAVE_SNMP */
+
+/* BEGIN SDX EXTENSION CHANGE */
+#include "bgpd/bgp_sdxext.h"
+/* END SDX EXTENSION CHANGE */
+
 
 /* BGP process wide configuration.  */
 static struct bgp_master bgp_master;
@@ -5380,6 +5385,10 @@ bgp_init (void)
 #ifdef HAVE_SNMP
   bgp_snmp_init ();
 #endif /* HAVE_SNMP */
+
+  /* BEGIN SDX EXTENSION CHANGE */
+  sdxext_init();
+  /* END SDX EXTENSION CHANGE */
 }
 
 void

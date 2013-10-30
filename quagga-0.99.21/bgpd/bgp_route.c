@@ -56,6 +56,10 @@ Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 #include "bgpd/bgp_vty.h"
 #include "bgpd/bgp_mpath.h"
 
+/* BEGIN SDX EXTENSION CHANGE */
+#include "bgpd/bgp_sdxext.h"
+/* END SDX EXTENSION CHANGE */
+
 /* Extern from bgp_dump.c */
 extern const char *bgp_origin_str[];
 extern const char *bgp_origin_long_str[];
@@ -2390,6 +2394,21 @@ bgp_update (struct peer *peer, struct prefix *p, struct attr *attr,
 
   bgp = peer->bgp;
 
+  /* BEGIN SDX EXTENSION CHANGE */
+  /* SPD - This is the end of the bgp_update, which seems like a good place to
+     actually send the data off to the SDX controller.
+     May have to actually do this from *within* the bgp_update_rsclient,
+     especailly if there is magical combining going on there (that is, if
+     10.1.2.0/24 and 10.1.1.0/24 were for one particular item, 10.1.0.0/23 would
+     be the result).
+   */
+  zlog(peer->log, LOG_DEBUG,
+       "%s SPD - Update", peer->host);
+  sdxext_log_route(peer->log, p, peer->host);
+  sdxext_log_peer(peer, peer->host);
+  /* BEGIN SDX EXTENSION CHANGE */
+
+
   /* Process the update for each RS-client. */
   for (ALL_LIST_ELEMENTS (bgp->rsclient, node, nnode, rsclient))
     {
@@ -2414,6 +2433,20 @@ bgp_withdraw (struct peer *peer, struct prefix *p, struct attr *attr,
   struct listnode *node, *nnode;
 
   bgp = peer->bgp;
+
+  /* BEGIN SDX EXTENSION CHANGE */
+  /* SPD - This is the end of the bgp_withdraw, which seems like a good place to
+     actually send the data off to the SDX controller.
+     May have to actually do this from *within* the bgp_withdraw_rsclient,
+     especailly if there is magical splittinging going on there (that is, if
+     10.1.0.0/23 was in the DB already, and 10.1.1.0/24 was withdrawn leaving
+     10.1.0.0/24 alone as the result)
+   */
+  zlog(peer->log, LOG_DEBUG,
+       "%s - SPD - Withdraw ", peer->host);
+  sdxext_log_route(peer->log, p, peer->host);
+  sdxext_log_peer(peer, peer->host);
+  /* END SDX EXTENSION CHANGE */
 
   /* Process the withdraw for each RS-client. */
   for (ALL_LIST_ELEMENTS (bgp->rsclient, node, nnode, rsclient))
