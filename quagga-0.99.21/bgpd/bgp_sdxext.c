@@ -473,3 +473,26 @@ sdxext_bgp_update_bypass(struct peer* peer, struct prefix* p, struct attr* attr,
 
     return 1;
 }
+
+int
+sdxext_bgp_withdraw_bypass (struct peer *peer, struct prefix *p, struct attr *attr,
+			    afi_t afi, safi_t safi, int type, int sub_type,
+			    struct prefix_rd *prd, u_char *tag)
+{
+    zlog(peer->log, LOG_DEBUG,
+	 "%s SPD - In %s", peer->host, __FUNCTION__);
+
+    // encode and sent this over to the SDX
+
+
+    // Parse out what's returned by the SDX
+
+
+    // Call with the updated information, if the SDX wants us to
+    if (1)
+	bgp_withdraw_rsclients_bypass(peer, p, attr, afi, safi, type, sub_type,
+				      prd, tag);
+
+    return 1;
+
+}

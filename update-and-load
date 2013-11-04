@@ -7,6 +7,6 @@ dpkg-buildpackage -us -uc
 #use this if you want to commit, it's cleaner on the git status
 #dpkg-buildpackage -us -uc -tc 
 cd ..
-sudo dpkg --install ../quagga_0.99.22-1_amd64.deb
+sudo dpkg --install ../quagga_0.99.22-4_amd64.deb
 
 
