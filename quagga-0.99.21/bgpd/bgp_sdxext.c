@@ -232,14 +232,47 @@ sdxext_restart_cxn_timer(struct sdx_bgp_connection* cxn)
 
 int
 sdxext_send_packet(struct sdx_bgp_connection* cxn,
+		   void* header_ptr, size_t size_of_header_ptr,
                    void* data_ptr, size_t size_of_data_ptr)
 {
     size_t nbytes = 0;
+    while (nbytes < size_of_header_ptr)
+    {
+	// typecast is to be sure the pointer math works correctly
+	send(cxn->socket, (char*)header_ptr + nbytes,
+             size_of_header_ptr - nbytes, 0);
+    }
+    nbytes = 0;
     while (nbytes < size_of_data_ptr)
     {
-      // typecast is to be sure the pointer math works correctly
-      send(cxn->socket, (char*)data_ptr + nbytes,
+	// typecast is to be sure the pointer math works correctly
+	send(cxn->socket, (char*)data_ptr + nbytes,
              size_of_data_ptr - nbytes, 0);
+    }
+}
+
+int
+sdxext_recv_packet(struct sdx_bgp_connection* cxn,
+		   void* header_ptr, size_t size_of_header_ptr,
+                   void* data_ptr, size_t* size_of_data_ptr)
+{
+    size_t nbytes = 0;
+    while (nbytes < size_of_header_ptr)
+    {
+	// typecast is to be sure the pointer math works correctly
+	recv(cxn->socket, (char*)header_ptr + nbytes,
+             size_of_header_ptr - nbytes, 0);
+    }
+
+    *size_of_data_ptr = *((size_t*)header_ptr);
+    data_ptr = malloc(*size_of_data_ptr);
+    nbytes = 0;
+
+    while (nbytes < (*size_of_data_ptr))
+    {
+	// typecast is to be sure the pointer math works correctly
+	recv(cxn->socket, (char*)data_ptr + nbytes,
+	     (*size_of_data_ptr) - nbytes, 0);
     }
 }
 
@@ -294,7 +327,7 @@ sdxext_network_thread(void* portnumvoid)
 
     FD_SET(listener, &all_sockets);
     fdmax = listener; // init
-/* THIS NEEDS TO BE REWRITTEN.
+/* THIS NEEDS TO BE REWRITTEN. 
     // Select loop (a glorious infinite loop! For now, should change this)
     while(1)
     {
@@ -417,4 +450,26 @@ sdxext_new_route_received(char* route)
 	    */
         }
     }
+}
+
+int
+sdxext_bgp_update_bypass(struct peer* peer, struct prefix* p, struct attr* attr,
+			 afi_t afi, safi_t safi, int type, int sub_type,
+			 struct prefix_rd* prd, u_char* tag, int soft_reconfig)
+{
+    zlog(peer->log, LOG_DEBUG,
+	 "%s SPD - In %s", peer->host, __FUNCTION__);
+
+    // encode and sent this over to the SDX
+
+
+    // Parse out what's returned by the SDX
+
+
+    // Call with the updated information, if the SDX wants us to
+    if (1)
+	bgp_update_rsclients_bypass(peer, p, attr, afi, safi, type, sub_type, prd, 
+				    tag, soft_reconfig);
+
+    return 1;
 }

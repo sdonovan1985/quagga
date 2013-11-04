@@ -31,7 +31,7 @@
 
 // #defines and globals
 #define PROTOCOL_VERSION 1
-#define NUM_CXNS 1
+#define NUM_CXNS 10
 #define MISSED_KEEPALIVES 3
 #define KEEPALIVE_TIMEOUT 10
 #define PORTNUM 5555
@@ -118,7 +118,26 @@ sdxext_restart_cxn_timer(struct sdx_bgp_connection* cxn);
 
 int
 sdxext_send_packet(struct sdx_bgp_connection* cxn,
+		   void* header_ptr, size_t size_of_header_ptr,
                    void* data_ptr, size_t size_of_data_ptr);
+
+
+/* 
+ * sdx_ext_recv_packet()
+ *   Receives data from peer connection. Needs to know the structure of the 
+ *   header such that it knows how to get the size of the data. If the 
+ *   header is changed, this function MUST change.
+ *     - size_of_header_ptr ought to be 4 bytes
+ *     - header_ptr should be a valid pointer such that the header can be 
+ *       returned
+ *     - size_of_data_ptr is returned to the caller
+ *     - data_ptr is returned to the caller. Memory is allocated in this 
+ *       function and needs to be freed.
+ */
+int
+sdxext_recv_packet(struct sdx_bgp_connection* cxn,
+		   void* header_ptr, size_t size_of_header_ptr,
+		   void* data_ptr, size_t* size_of_data_ptr);
 
 /*
  * Network thread
@@ -126,6 +145,15 @@ sdxext_send_packet(struct sdx_bgp_connection* cxn,
 void*
 sdxext_network_thread(void* portnumvoid);
 
+
+
+/*
+ * Bypasses
+ */
+int
+sdxext_bgp_update_bypass(struct peer* peer, struct prefix* p, struct attr* attr,
+			 afi_t afi, safi_t safi, int type, int sub_type,
+			 struct prefix_rd* prd, u_char* tag, int soft_reconfig);
 
 #endif // __SDXEXT__
 
