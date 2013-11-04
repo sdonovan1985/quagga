@@ -3,7 +3,7 @@
 git pull
 cd quagga-0.99.21
 EDITOR=/bin/true dpkg-source -q --commit . 
-dpkg-buildpackage -us -u
+dpkg-buildpackage -us -uc
 #use this if you want to commit, it's cleaner on the git status
 #dpkg-buildpackage -us -uc -tc 
 cd ..
