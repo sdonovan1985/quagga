@@ -2439,20 +2439,16 @@ bgp_update_rsclients_bypass (struct peer *peer, struct prefix *p, struct attr *a
     }
 }
 
+void
+bgp_withdraw_rsclients_bypass (struct peer *peer, struct prefix *p, struct attr *attr,
+			       afi_t afi, safi_t safi, int type, int sub_type,
+			       struct prefix_rd *prd, u_char *tag);
+
 int
 bgp_withdraw (struct peer *peer, struct prefix *p, struct attr *attr,
 	     afi_t afi, safi_t safi, int type, int sub_type,
 	     struct prefix_rd *prd, u_char *tag)
 {
-  struct bgp *bgp;
-  char buf[SU_ADDRSTRLEN];
-  struct bgp_node *rn;
-  struct bgp_info *ri;
-  struct peer *rsclient;
-  struct listnode *node, *nnode;
-
-  bgp = peer->bgp;
-
   /* BEGIN SDX EXTENSION CHANGE */
   /* SPD - This is the end of the bgp_withdraw, which seems like a good place to
      actually send the data off to the SDX controller.
@@ -2466,6 +2462,28 @@ bgp_withdraw (struct peer *peer, struct prefix *p, struct attr *attr,
   sdxext_log_route(peer->log, p, peer->host);
   sdxext_log_peer(peer, peer->host);
   /* END SDX EXTENSION CHANGE */
+
+
+  sdxext_bgp_withdraw_bypass (peer, p, attr, afi, safi, type, sub_type,
+			      prd, tag);
+
+  return 0;
+
+}
+
+void
+bgp_withdraw_rsclients_bypass (struct peer *peer, struct prefix *p, struct attr *attr,
+			       afi_t afi, safi_t safi, int type, int sub_type,
+			       struct prefix_rd *prd, u_char *tag)
+{
+  struct bgp *bgp;
+  char buf[SU_ADDRSTRLEN];
+  struct bgp_node *rn;
+  struct bgp_info *ri;
+  struct peer *rsclient;
+  struct listnode *node, *nnode;
+
+  bgp = peer->bgp;
 
   /* Process the withdraw for each RS-client. */
   for (ALL_LIST_ELEMENTS (bgp->rsclient, node, nnode, rsclient))
@@ -2506,8 +2524,6 @@ bgp_withdraw (struct peer *peer, struct prefix *p, struct attr *attr,
 
   /* Unlock bgp_node_get() lock. */
   bgp_unlock_node (rn);
-
-  return 0;
 }
 
 void
