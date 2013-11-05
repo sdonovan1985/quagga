@@ -22,6 +22,7 @@
 #include "bgp_advertise.h"
 #include "bgp_aspath.h"
 #include "bgp_attr.h"
+#include "bgp_route.h"
 #include "prefix.h"
 
 #include <signal.h>
@@ -35,6 +36,8 @@
 #define MISSED_KEEPALIVES 3
 #define KEEPALIVE_TIMEOUT 10
 #define PORTNUM 5555
+#define SDXTESTINGADDRESS "10.172.0.100"
+
 
 
 // Enumerations
@@ -117,7 +120,7 @@ int
 sdxext_restart_cxn_timer(struct sdx_bgp_connection* cxn);
 
 int
-sdxext_send_packet(struct sdx_bgp_connection* cxn,
+sdxext_send_packet(int socket,
 		   void* header_ptr, size_t size_of_header_ptr,
                    void* data_ptr, size_t size_of_data_ptr);
 
@@ -134,8 +137,9 @@ sdxext_send_packet(struct sdx_bgp_connection* cxn,
  *     - data_ptr is returned to the caller. Memory is allocated in this 
  *       function and needs to be freed.
  */
+
 int
-sdxext_recv_packet(struct sdx_bgp_connection* cxn,
+sdxext_recv_packet(int socket, 
 		   void* header_ptr, size_t size_of_header_ptr,
 		   void* data_ptr, size_t* size_of_data_ptr);
 
@@ -159,6 +163,19 @@ int
 sdxext_bgp_withdraw_bypass (struct peer *peer, struct prefix *p, struct attr *attr,
 			    afi_t afi, safi_t safi, int type, int sub_type,
 			    struct prefix_rd *prd, u_char *tag);
+
+
+/*
+ * Network connection related
+ */
+int
+sdxext_bgp_get_sdx_addr(struct sockaddr_in* addr);
+
+int
+sdxext_bgp_open_transient_connection (struct sockaddr_in* addr);
+
+int
+sdxext_bgp_close_transient_connection (int socket);
 
 
 

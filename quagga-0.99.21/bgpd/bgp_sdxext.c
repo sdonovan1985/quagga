@@ -7,6 +7,8 @@ static int connection_array_initialized = 0;
 static pthread_t network_thread;
 fd_set all_sockets;
 fd_set read_fds;
+struct sockaddr_in sdx_address;
+
 
 extern struct bgp_master *bm;
 
@@ -231,7 +233,7 @@ sdxext_restart_cxn_timer(struct sdx_bgp_connection* cxn)
 }
 
 int
-sdxext_send_packet(struct sdx_bgp_connection* cxn,
+sdxext_send_packet(int socket,
 		   void* header_ptr, size_t size_of_header_ptr,
                    void* data_ptr, size_t size_of_data_ptr)
 {
@@ -239,20 +241,20 @@ sdxext_send_packet(struct sdx_bgp_connection* cxn,
     while (nbytes < size_of_header_ptr)
     {
 	// typecast is to be sure the pointer math works correctly
-	send(cxn->socket, (char*)header_ptr + nbytes,
+	send(socket, (char*)header_ptr + nbytes,
              size_of_header_ptr - nbytes, 0);
     }
     nbytes = 0;
     while (nbytes < size_of_data_ptr)
     {
 	// typecast is to be sure the pointer math works correctly
-	send(cxn->socket, (char*)data_ptr + nbytes,
+	send(socket, (char*)data_ptr + nbytes,
              size_of_data_ptr - nbytes, 0);
     }
 }
 
 int
-sdxext_recv_packet(struct sdx_bgp_connection* cxn,
+sdxext_recv_packet(int socket,
 		   void* header_ptr, size_t size_of_header_ptr,
                    void* data_ptr, size_t* size_of_data_ptr)
 {
@@ -260,7 +262,7 @@ sdxext_recv_packet(struct sdx_bgp_connection* cxn,
     while (nbytes < size_of_header_ptr)
     {
 	// typecast is to be sure the pointer math works correctly
-	recv(cxn->socket, (char*)header_ptr + nbytes,
+	recv(socket, (char*)header_ptr + nbytes,
              size_of_header_ptr - nbytes, 0);
     }
 
@@ -271,7 +273,7 @@ sdxext_recv_packet(struct sdx_bgp_connection* cxn,
     while (nbytes < (*size_of_data_ptr))
     {
 	// typecast is to be sure the pointer math works correctly
-	recv(cxn->socket, (char*)data_ptr + nbytes,
+	recv(socket, (char*)data_ptr + nbytes,
 	     (*size_of_data_ptr) - nbytes, 0);
     }
 }
@@ -459,21 +461,43 @@ sdxext_bgp_update_bypass(struct peer* peer, struct prefix* p, struct attr* attr,
 {
     zlog(peer->log, LOG_DEBUG,
 	 "%s SPD - In %s", peer->host, __FUNCTION__);
+    int sock;
+    struct sockaddr_in* addr;
+    zlog(peer->log, LOG_DEBUG,
+	 "%s SPD - In %s", peer->host, __FUNCTION__);
 
     // Open connection. If fails, assume the SDX is down, bypass encode/decode
+    sdxext_bgp_get_sdx_addr(addr);
+    sock = sdxext_bgp_open_transient_connection(addr);
+
+    if (sock < 0)
+    { 
+	// Encode and sent this over to the SDX
+	char tosend[16] = "1243567890";
+	int tosendheader = 16;
+	char toreceive[16];
+	int toreceiveheader;
+	int toreceivesize;
+	memset(&tosend+10, 0, 5); // NULL terminate
+	memset(&toreceive, 0, 16);
+	
+	// Send to SDX
+	sdxext_send_packet(sock, 
+			   (void*)(&tosendheader), sizeof(tosendheader),
+			   (void*)(&tosend), tosendheader);
+
+	// Parse out what's returned by the SDX
+	sdxext_recv_packet(sock,
+			   (void*)(&toreceiveheader), sizeof(toreceiveheader),
+			   (void*)(&toreceive), (size_t*)&toreceivesize);
+	zlog(peer->log, LOG_DEBUG,
+	     "%s SPD - Received %s of size %d", 
+	     peer->host, toreceive, toreceivesize);
 
 
-    // Encode and sent this over to the SDX
-    
-
-    // Send to SDX
-
-
-    // Parse out what's returned by the SDX
-
-
-    // Close connection
-
+	// Close connection
+	sdxext_bgp_close_transient_connection(sock);
+    }
 
     // Call with the updated information, if the SDX wants us to
     if (1)
@@ -488,24 +512,44 @@ sdxext_bgp_withdraw_bypass (struct peer *peer, struct prefix *p, struct attr *at
 			    afi_t afi, safi_t safi, int type, int sub_type,
 			    struct prefix_rd *prd, u_char *tag)
 {
+    int sock;
+    struct sockaddr_in* addr;
     zlog(peer->log, LOG_DEBUG,
 	 "%s SPD - In %s", peer->host, __FUNCTION__);
 
     // Open connection. If fails, assume the SDX is down, bypass encode/decode
+    sdxext_bgp_get_sdx_addr(addr);
+    sock = sdxext_bgp_open_transient_connection(addr);
+
+    if (sock < 0)
+    { 
+	// Encode and sent this over to the SDX
+	char tosend[16] = "1243567890";
+	int tosendheader = 16;
+	char toreceive[16];
+	int toreceiveheader;
+	int toreceivesize;
+	memset(&tosend+10, 0, 5); // NULL terminate
+	memset(&toreceive, 0, 16);
+	
+	// Send to SDX
+	sdxext_send_packet(sock, 
+			   (void*)(&tosendheader), sizeof(tosendheader),
+			   (void*)(&tosend), tosendheader);
+
+	// Parse out what's returned by the SDX
+	sdxext_recv_packet(sock,
+			   (void*)(&toreceiveheader), sizeof(toreceiveheader),
+			   (void*)(&toreceive), (size_t*)&toreceivesize);
+	zlog(peer->log, LOG_DEBUG,
+	     "%s SPD - Received %s of size %d", 
+	     peer->host, toreceive, toreceivesize);
 
 
-    // Encode and sent this over to the SDX
+	// Close connection
+	sdxext_bgp_close_transient_connection(sock);
+    }
     
-
-    // Send to SDX
-
-
-    // Parse out what's returned by the SDX
-
-
-    // Close connection
-
-
     // Call with the updated information, if the SDX wants us to
     if (1)
 	bgp_withdraw_rsclients_bypass(peer, p, attr, afi, safi, type, sub_type,
@@ -513,4 +557,36 @@ sdxext_bgp_withdraw_bypass (struct peer *peer, struct prefix *p, struct attr *at
 
     return 1;
 
+}
+
+int
+sdxext_bgp_get_sdx_addr(struct sockaddr_in* addr)
+{
+    addr = &sdx_address;
+    addr->sin_family = AF_INET;
+    addr->sin_port = htons(PORTNUM);
+    inet_pton(addr->sin_family, SDXTESTINGADDRESS, (void*)&(addr->sin_addr));
+    return 1;
+}
+
+int
+sdxext_bgp_open_transient_connection (struct sockaddr_in* addr)
+{
+    int sock = -1;
+    sock = socket(addr->sin_family, SOCK_STREAM, 0);
+
+    if (sock == 0)
+	return -1;
+
+    if (connect(socket, (struct sockaddr*)&addr, sizeof(addr)) < 0)
+	return -1;
+    
+    return sock;
+}
+
+int
+sdxext_bgp_close_transient_connection (int sock)
+{
+    close(sock);
+    return 0;
 }

@@ -241,4 +241,16 @@ extern void route_vty_out (struct vty *, struct prefix *, struct bgp_info *, int
 extern void route_vty_out_tag (struct vty *, struct prefix *, struct bgp_info *, int, safi_t);
 extern void route_vty_out_tmp (struct vty *, struct prefix *, struct attr *, safi_t);
 
+/* SDXEXT CHANGE BEGIN */
+void
+bgp_update_rsclients_bypass (struct peer *peer, struct prefix *p, struct attr *attr,
+			     afi_t afi, safi_t safi, int type, int sub_type,
+			     struct prefix_rd *prd, u_char *tag, int soft_reconfig);
+
+void
+bgp_withdraw_rsclients_bypass (struct peer *peer, struct prefix *p, struct attr *attr,
+			       afi_t afi, safi_t safi, int type, int sub_type,
+			       struct prefix_rd *prd, u_char *tag);
+
+
 #endif /* _QUAGGA_BGP_ROUTE_H */

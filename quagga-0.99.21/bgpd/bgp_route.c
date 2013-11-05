@@ -2379,11 +2379,6 @@ bgp_update_main (struct peer *peer, struct prefix *p, struct attr *attr,
   return 0;
 }
 
-void
-bgp_update_rsclients_bypass (struct peer *peer, struct prefix *p, struct attr *attr,
-			     afi_t afi, safi_t safi, int type, int sub_type,
-			     struct prefix_rd *prd, u_char *tag, int soft_reconfig);
-
 int
 bgp_update (struct peer *peer, struct prefix *p, struct attr *attr,
             afi_t afi, safi_t safi, int type, int sub_type,
@@ -2438,11 +2433,6 @@ bgp_update_rsclients_bypass (struct peer *peer, struct prefix *p, struct attr *a
                 sub_type, prd, tag);
     }
 }
-
-void
-bgp_withdraw_rsclients_bypass (struct peer *peer, struct prefix *p, struct attr *attr,
-			       afi_t afi, safi_t safi, int type, int sub_type,
-			       struct prefix_rd *prd, u_char *tag);
 
 int
 bgp_withdraw (struct peer *peer, struct prefix *p, struct attr *attr,
