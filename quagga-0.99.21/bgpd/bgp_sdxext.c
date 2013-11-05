@@ -460,10 +460,19 @@ sdxext_bgp_update_bypass(struct peer* peer, struct prefix* p, struct attr* attr,
     zlog(peer->log, LOG_DEBUG,
 	 "%s SPD - In %s", peer->host, __FUNCTION__);
 
-    // encode and sent this over to the SDX
+    // Open connection. If fails, assume the SDX is down, bypass encode/decode
+
+
+    // Encode and sent this over to the SDX
+    
+
+    // Send to SDX
 
 
     // Parse out what's returned by the SDX
+
+
+    // Close connection
 
 
     // Call with the updated information, if the SDX wants us to
@@ -482,10 +491,19 @@ sdxext_bgp_withdraw_bypass (struct peer *peer, struct prefix *p, struct attr *at
     zlog(peer->log, LOG_DEBUG,
 	 "%s SPD - In %s", peer->host, __FUNCTION__);
 
-    // encode and sent this over to the SDX
+    // Open connection. If fails, assume the SDX is down, bypass encode/decode
+
+
+    // Encode and sent this over to the SDX
+    
+
+    // Send to SDX
 
 
     // Parse out what's returned by the SDX
+
+
+    // Close connection
 
 
     // Call with the updated information, if the SDX wants us to
