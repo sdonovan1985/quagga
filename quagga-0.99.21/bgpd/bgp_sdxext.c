@@ -470,7 +470,7 @@ sdxext_bgp_update_bypass(struct peer* peer, struct prefix* p, struct attr* attr,
     sdxext_bgp_get_sdx_addr(addr);
     sock = sdxext_bgp_open_transient_connection(addr);
 
-    if (sock < 0)
+    if (0 < sock)
     { 
 	// Encode and sent this over to the SDX
 	char tosend[16] = "1243567890";
@@ -478,9 +478,9 @@ sdxext_bgp_update_bypass(struct peer* peer, struct prefix* p, struct attr* attr,
 	char toreceive[16];
 	int toreceiveheader;
 	int toreceivesize;
-	memset(&tosend+10, 0, 5); // NULL terminate
+	memset(&tosend+10, 0, 4); // NULL terminate
 	memset(&toreceive, 0, 16);
-	
+
 	// Send to SDX
 	sdxext_send_packet(sock, 
 			   (void*)(&tosendheader), sizeof(tosendheader),
@@ -490,9 +490,12 @@ sdxext_bgp_update_bypass(struct peer* peer, struct prefix* p, struct attr* attr,
 	sdxext_recv_packet(sock,
 			   (void*)(&toreceiveheader), sizeof(toreceiveheader),
 			   (void*)(&toreceive), (size_t*)&toreceivesize);
+
 	zlog(peer->log, LOG_DEBUG,
 	     "%s SPD - Received %s of size %d", 
 	     peer->host, toreceive, toreceivesize);
+
+
 
 
 	// Close connection
@@ -512,7 +515,7 @@ sdxext_bgp_withdraw_bypass (struct peer *peer, struct prefix *p, struct attr *at
 			    afi_t afi, safi_t safi, int type, int sub_type,
 			    struct prefix_rd *prd, u_char *tag)
 {
-    int sock;
+    int sock = -1;
     struct sockaddr_in* addr;
     zlog(peer->log, LOG_DEBUG,
 	 "%s SPD - In %s", peer->host, __FUNCTION__);
@@ -521,7 +524,7 @@ sdxext_bgp_withdraw_bypass (struct peer *peer, struct prefix *p, struct attr *at
     sdxext_bgp_get_sdx_addr(addr);
     sock = sdxext_bgp_open_transient_connection(addr);
 
-    if (sock < 0)
+    if (0 < sock)
     { 
 	// Encode and sent this over to the SDX
 	char tosend[16] = "1243567890";
@@ -529,7 +532,7 @@ sdxext_bgp_withdraw_bypass (struct peer *peer, struct prefix *p, struct attr *at
 	char toreceive[16];
 	int toreceiveheader;
 	int toreceivesize;
-	memset(&tosend+10, 0, 5); // NULL terminate
+	memset(&tosend+10, 0, 4); // NULL terminate
 	memset(&toreceive, 0, 16);
 	
 	// Send to SDX
@@ -573,6 +576,7 @@ int
 sdxext_bgp_open_transient_connection (struct sockaddr_in* addr)
 {
     int sock = -1;
+    int ret;
     struct addrinfo hints, *res;
 
     memset(&hints, 0, sizeof(hints));
@@ -582,20 +586,15 @@ sdxext_bgp_open_transient_connection (struct sockaddr_in* addr)
     getaddrinfo(SDXTESTINGADDRESS, PORTNUM, &hints, &res);
 
     sock = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-
-    connect(sock, res->ai_addr, res->ai_addrlen);
-/*
-    int sock = -1;
-    sock = socket(addr->sin_family, SOCK_STREAM, 0);
-
-    if (sock == 0)
-	return -1;
-
-    if (connect(socket, (struct sockaddr*)&addr, sizeof(addr)) < 0)
-	return -1;
     
+    ret = connect(sock, res->ai_addr, res->ai_addrlen);
+    if (ret != 0)
+    {
+        close(sock);
+	sock = -1;
+    }
     return sock;
-*/
+
 }
 
 int
