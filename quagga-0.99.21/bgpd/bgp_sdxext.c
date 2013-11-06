@@ -461,8 +461,6 @@ sdxext_bgp_update_bypass(struct peer* peer, struct prefix* p, struct attr* attr,
 			 afi_t afi, safi_t safi, int type, int sub_type,
 			 struct prefix_rd* prd, u_char* tag, int soft_reconfig)
 {
-    zlog(peer->log, LOG_DEBUG,
-	 "%s SPD - In %s", peer->host, __FUNCTION__);
     int sock;
     struct sockaddr_in* addr;
     zlog(peer->log, LOG_DEBUG,
@@ -575,6 +573,19 @@ int
 sdxext_bgp_open_transient_connection (struct sockaddr_in* addr)
 {
     int sock = -1;
+    struct addrinfo hints, *res;
+
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    
+    getaddrinfo(SDXTESTINGADDRESS, PORTNUM, &hints, &res);
+
+    sock = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+
+    connect(sock, res->ai_addr, res->ai_addrlen);
+/*
+    int sock = -1;
     sock = socket(addr->sin_family, SOCK_STREAM, 0);
 
     if (sock == 0)
@@ -584,6 +595,7 @@ sdxext_bgp_open_transient_connection (struct sockaddr_in* addr)
 	return -1;
     
     return sock;
+*/
 }
 
 int
