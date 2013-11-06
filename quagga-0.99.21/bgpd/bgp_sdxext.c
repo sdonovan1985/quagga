@@ -240,19 +240,23 @@ sdxext_send_packet(int socket,
                    void* data_ptr, size_t size_of_data_ptr)
 {
     size_t nbytes = 0;
+
+    signal(SIGPIPE, SIG_IGN);
+    
     while (nbytes < size_of_header_ptr)
     {
 	// typecast is to be sure the pointer math works correctly
-	send(socket, (char*)header_ptr + nbytes,
-             size_of_header_ptr - nbytes, 0);
+	nbytes += send(socket, (char*)header_ptr + nbytes,
+		       size_of_header_ptr - nbytes, 0);
     }
     nbytes = 0;
     while (nbytes < size_of_data_ptr)
     {
 	// typecast is to be sure the pointer math works correctly
-	send(socket, (char*)data_ptr + nbytes,
-             size_of_data_ptr - nbytes, 0);
+	nbytes += send(socket, (char*)data_ptr + nbytes,
+		       size_of_data_ptr - nbytes, 0);
     }
+    send(socket, "\n", 1, 0);
 }
 
 int
@@ -264,8 +268,8 @@ sdxext_recv_packet(int socket,
     while (nbytes < size_of_header_ptr)
     {
 	// typecast is to be sure the pointer math works correctly
-	recv(socket, (char*)header_ptr + nbytes,
-             size_of_header_ptr - nbytes, 0);
+	nbytes += recv(socket, (char*)header_ptr + nbytes,
+		       size_of_header_ptr - nbytes, 0);
     }
 
     *size_of_data_ptr = *((size_t*)header_ptr);
@@ -275,8 +279,8 @@ sdxext_recv_packet(int socket,
     while (nbytes < (*size_of_data_ptr))
     {
 	// typecast is to be sure the pointer math works correctly
-	recv(socket, (char*)data_ptr + nbytes,
-	     (*size_of_data_ptr) - nbytes, 0);
+	nbytes += recv(socket, (char*)data_ptr + nbytes,
+		       (*size_of_data_ptr) - nbytes, 0);
     }
 }
 
@@ -478,7 +482,7 @@ sdxext_bgp_update_bypass(struct peer* peer, struct prefix* p, struct attr* attr,
 	char toreceive[16];
 	int toreceiveheader;
 	int toreceivesize;
-	memset(&tosend+10, 0, 4); // NULL terminate
+	memset(&(tosend[10]), 0, 4); // NULL terminate
 	memset(&toreceive, 0, 16);
 
 	// Send to SDX
@@ -490,6 +494,7 @@ sdxext_bgp_update_bypass(struct peer* peer, struct prefix* p, struct attr* attr,
 	sdxext_recv_packet(sock,
 			   (void*)(&toreceiveheader), sizeof(toreceiveheader),
 			   (void*)(&toreceive), (size_t*)&toreceivesize);
+
 
 	zlog(peer->log, LOG_DEBUG,
 	     "%s SPD - Received %s of size %d", 

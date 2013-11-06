@@ -145,7 +145,7 @@ int main(void)
                             // send to everyone!
                             if (FD_ISSET(j, &master)) {
                                 // except the listener and ourselves - SPD send to ourselves
-                                if (/*j != listener &&*/ j != i) {
+			        if (j != listener /*&& j != i*/) {
                                     if (send(j, buf, nbytes, 0) == -1) {
                                         perror("send");
                                     }
