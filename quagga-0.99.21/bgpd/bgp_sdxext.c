@@ -52,8 +52,10 @@ sdxext_init(void)
     sdxext_initialize_connections();
 
     // Start up network thread
-    pthread_create(&network_thread, NULL,
-                   &sdxext_network_thread, (void*)(&param));
+/* COMMENTING OUT DUE TO COMPILATION ISSUE ON THE VMs.
+  pthread_create(&network_thread, NULL,
+      &sdxext_network_thread, (void*)(&param));
+*/
 //TODO -- Quagga has their own threading library. May want to switch over to
 //        that. Unfortunately, that would couple this a bit more than it is.
 
